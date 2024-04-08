@@ -1,3 +1,4 @@
+import { Ai } from '@cloudflare/ai';
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
@@ -9,6 +10,7 @@
  */
 
 export interface Env {
+	AI: any;
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
 	// MY_KV_NAMESPACE: KVNamespace;
 	//
@@ -25,8 +27,25 @@ export interface Env {
 	// MY_QUEUE: Queue;
 }
 
+interface RequestBody {
+	url: string;
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+		const request_body: RequestBody = await request.json();
+		const url = request_body.url;
+
+		const res = await fetch(url);
+		const blob = await res.arrayBuffer();
+
+		const ai = new Ai(env.AI);
+		const input = {
+			audio: [...new Uint8Array(blob)],
+		};
+
+		const response = await ai.run('@cf/openai/whisper', input);
+
+		return Response.json({ response });
 	},
 };
