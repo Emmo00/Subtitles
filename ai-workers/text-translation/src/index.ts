@@ -1,3 +1,4 @@
+import { Ai } from '@cloudflare/ai';
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
@@ -9,6 +10,7 @@
  */
 
 export interface Env {
+	AI: any;
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
 	// MY_KV_NAMESPACE: KVNamespace;
 	//
@@ -25,8 +27,28 @@ export interface Env {
 	// MY_QUEUE: Queue;
 }
 
+interface RequestBody {
+	text: string;
+	source_lang: string;
+	target_lang: string;
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+		const requestBody: RequestBody = await request.json();
+		const text = requestBody.text;
+		const source_lang = requestBody.source_lang;
+		const target_lang = requestBody.target_lang;
+
+		const query = {
+			text,
+			source_lang,
+			target_lang,
+		};
+
+		const ai = new Ai(env.AI);
+		const response = await ai.run('@cf/meta/m2m100-1.2b', query);
+
+		return Response.json({ response });
 	},
 };
