@@ -25,6 +25,7 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { ref } from 'vue';
+import { CreateUploadflyClient } from 'uploadfly/js';
 
 
 const ffmpeg = new FFmpeg();
@@ -87,7 +88,12 @@ async function submitForm() {
     console.log('writing output audio')
     const outputAudio = await ffmpeg.readFile('out.mp3');
     console.log("done writing file")
-    audio.value = (URL.createObjectURL(new Blob([outputAudio.buffer], { type: 'audio/mpep' })))
+    // upload audio to cloud and get url
+    // send url to audio to text worker ai
+    // if target language not equal to source language, send to translation worker ai (coming soon)
+    // convert text to srt file
+    // add srt file to video
+    // show video for download to user
 }
 </script>
 

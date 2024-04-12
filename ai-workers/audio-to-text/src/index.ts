@@ -1,4 +1,5 @@
 import { Ai } from '@cloudflare/ai';
+const multer = require('multer');
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
@@ -33,10 +34,8 @@ interface RequestBody {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const request_body: RequestBody = await request.json();
-		const url = request_body.url;
-
-		const res = await fetch(url);
+		const requestBody: RequestBody = await request.json();
+		const res: any = await fetch(requestBody.url);
 		const blob = await res.arrayBuffer();
 
 		const ai = new Ai(env.AI);
