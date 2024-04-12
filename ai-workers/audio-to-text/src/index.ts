@@ -1,5 +1,4 @@
 import { Ai } from '@cloudflare/ai';
-const multer = require('multer');
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
