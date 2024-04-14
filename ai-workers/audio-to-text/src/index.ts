@@ -34,6 +34,7 @@ interface RequestBody {
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const requestBody: RequestBody = await request.json();
+		console.log(requestBody);
 		const res: any = await fetch(requestBody.url);
 		const blob = await res.arrayBuffer();
 
@@ -42,8 +43,18 @@ export default {
 			audio: [...new Uint8Array(blob)],
 		};
 
-		const response = await ai.run('@cf/openai/whisper', input);
+		const data = await ai.run('@cf/openai/whisper', input);
+		const resBody = JSON.stringify({ data });
 
-		return Response.json({ response });
+		return new Response(resBody, {
+			headers: {
+				'Content-Type': 'application/json',
+				// Allow all origins
+				'Access-Control-Allow-Origin': '*',
+				// Optionally, you can also set other CORS headers
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type',
+			},
+		});
 	},
 };

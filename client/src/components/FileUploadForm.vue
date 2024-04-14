@@ -1,5 +1,4 @@
 <template>
-    <audio :src="audio" controls></audio>
     <div class="form-container">
         <form class="dropzone-box">
             <h2>Upload and attach video files</h2>
@@ -7,15 +6,19 @@
             <div class="dropzone-area" ref="dropzoneArea" @dragover.prevent="dragOver" @dragleave="dragLeave"
                 @dragend="dragLeave" @drop.prevent="drop">
                 <div class="file-upload-icon">
-                    <!-- svg -->
                 </div>
                 <input type="file" id="upload-file" name="uploaded-file" @change="fileChanged" />
                 <p class="file-info" :class="fileRequired ? 'error' : 'text-gray'">{{ fileInfo }}</p>
             </div>
-            <div class="dropzone-actions">
+            <div v-if="!filesReady" class="dropzone-actions">
                 <button type="reset">Cancel</button>
                 <button v-if="submitted" id="submit-button" type="submit" disabled>Loading...</button>
                 <button v-else id="submit-button" type="submit" @click.prevent="submitForm">Process</button>
+            </div>
+            <div v-else style="display: flex; gap: 12px;" class="dropzone-actions">
+                <button class="submit-button" @click.prevent="downloadSRTFile">Download SRT</button>
+                <button class="submit-button" @click.prevent="downloadTranscriptFile">Download Transcript</button>
+                <button class="submit-button" @click.prevent="downloadVTTFile">Download VTT</button>
             </div>
         </form>
     </div>
@@ -25,7 +28,7 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { ref } from 'vue';
-import { CreateUploadflyClient } from 'uploadfly/js';
+import { uploadAudio, sendToAudioTextWorker, createSRTFile, createTranscriptFile, createVTTFile } from '../utils.js';
 
 
 const ffmpeg = new FFmpeg();
@@ -34,8 +37,14 @@ const fileInfo = ref("No Files Selected");
 const dropzoneArea = ref(null);
 const fileRequired = ref(false);
 const submitted = ref(false);
-const audio = ref(null);
-const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
+const filesReady = ref(false);
+const readyTranscriptFile = ref();
+const readySRTFile = ref(null);
+const readyVTTFile = ref(null);
+const transcriptBlob = ref(null)
+const vttBlob = ref(null)
+const srtBlob = ref(null)
+
 
 function fileChanged(e) {
     if (e.target.files.length) {
@@ -82,18 +91,51 @@ async function submitForm() {
         workerURL: await toBlobURL(`/ffmpeg-core.worker.js`, 'text/javascript')
     })
     console.log("Writing video file")
-    await ffmpeg.writeFile(selectedFile.value.name, await fetchFile(URL.createObjectURL(selectedFile.value)));
+    const videoFileBlobURL = URL.createObjectURL(selectedFile.value)
+    await ffmpeg.writeFile(selectedFile.value.name, await fetchFile(videoFileBlobURL));
     console.log("executing command...")
     await ffmpeg.exec(['-i', selectedFile.value.name, '-vn', '-acodec', 'libmp3lame', 'out.mp3']);
     console.log('writing output audio')
     const outputAudio = await ffmpeg.readFile('out.mp3');
     console.log("done writing file")
     // upload audio to cloud and get url
+    const url = await uploadAudio(new Blob([outputAudio.buffer], { type: 'audio/mpeg' }))
     // send url to audio to text worker ai
+    const audioTextResponse = await sendToAudioTextWorker(url);
     // if target language not equal to source language, send to translation worker ai (coming soon)
+
+    // prepare transcript file
+    transcriptBlob = createTranscriptFile(audioTextResponse);
+    // prepare VTT file
+    vttBlob.value = createVTTFile(audioTextResponse);
     // convert text to srt file
-    // add srt file to video
-    // show video for download to user
+    srtBlob.value = createSRTFile(audioTextResponse);
+
+    filesReady.value = true;
+}
+
+function downloadSRTFile() {
+    const downloadURL = URL.createObjectURL(srtBlob.value);
+    const downloadLink = document.createElement('a')
+    downloadLink.href = downloadURL;
+    downloadLink.download = `Subtitled_${selectedFile.value.name.split('.')[0]}.srt`;
+    downloadLink.click();
+}
+
+function downloadVTTFile() {
+    const downloadURL = URL.createObjectURL(vttBlob.value);
+    const downloadLink = document.createElement('a')
+    downloadLink.href = downloadURL;
+    downloadLink.download = `Subtitled_${selectedFile.value.name.split('.')[0]}.vtt`;
+    downloadLink.click();
+}
+
+function downloadTranscriptFile() {
+    const downloadURL = URL.createObjectURL(transcriptBlob.value);
+    const downloadLink = document.createElement('a')
+    downloadLink.href = downloadURL;
+    downloadLink.download = `Subtitled_${selectedFile.value.name.split('.')[0]}.txt`;
+    downloadLink.click();
 }
 </script>
 
@@ -239,5 +281,10 @@ async function submitForm() {
 
 .dropzone-actions button[type='submit']:hover {
     background: var(--primary-hover);
+}
+
+.submit-button {
+    border-radius: 0.5rem;
+    padding: 5px;
 }
 </style>
