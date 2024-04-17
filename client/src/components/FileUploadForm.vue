@@ -38,9 +38,6 @@ const dropzoneArea = ref(null);
 const fileRequired = ref(false);
 const submitted = ref(false);
 const filesReady = ref(false);
-const readyTranscriptFile = ref();
-const readySRTFile = ref(null);
-const readyVTTFile = ref(null);
 const transcriptBlob = ref(null)
 const vttBlob = ref(null)
 const srtBlob = ref(null)
@@ -99,6 +96,7 @@ async function submitForm() {
     const outputAudio = await ffmpeg.readFile('out.mp3');
     console.log("done writing file")
     // upload audio to cloud and get url
+    console.log("uploading audio to cloud")
     const url = await uploadAudio(new Blob([outputAudio.buffer], { type: 'audio/mpeg' }))
     // send url to audio to text worker ai
     const audioTextResponse = await sendToAudioTextWorker(url);
