@@ -7,15 +7,20 @@ export async function uploadAudio(file) {
   fd.append('tags', 'browser_upload'); // Optional - add tags for image admin in Cloudinary
   fd.append('file', file);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    body: fd,
-  });
-  const responseObject = await response.json();
+  // const response = await fetch(url, {
+  //   method: 'POST',
+  //   body: fd,
+  // });
+  // const responseObject = await response.json();
 
-  console.log('cloudinary', responseObject);
+  // console.log('cloudinary', responseObject);
 
-  return responseObject.secure_url;
+  // return responseObject.secure_url;
+  return {
+    secure_url:
+      'https://res.cloudinary.com/drcwv987u/video/upload/v1713367041/subtitles/u2ipodtyq7hgoq69mk3t.mp3',
+    signature: '2442ac1acd5c31aeaf5d5d1e160b00642405e2f1',
+  }.secure_url;
 }
 
 export async function sendToAudioTextWorker(url) {
@@ -33,7 +38,13 @@ export async function sendToAudioTextWorker(url) {
 }
 
 function convertTimestamp(timestamp) {
-  return timestamp;
+  let [time, milliseconds] = timestamp.split('.');
+  time = Number(time);
+  const seconds = 60 % time;
+  const minutes = 60 % Math.floor(time / 60);
+  const hours = Math.floor(Math.floor(time / 60) / 60);
+
+  return `${hours}:${minutes}:${seconds},${milliseconds}`;
 }
 
 function convertVTTToSRT(vttContent) {
