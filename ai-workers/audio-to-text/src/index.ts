@@ -33,7 +33,21 @@ interface RequestBody {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const requestBody: RequestBody = await request.json();
+		let requestBody: RequestBody;
+		try {
+			requestBody = await request.json();
+		} catch {
+			return new Response("you're welcome", {
+				headers: new Headers({
+					'Content-Type': 'application/json',
+					// Allow all origins
+					'Access-Control-Allow-Origin': '*',
+					// Optionally, you can also set other CORS headers
+					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+					'Access-Control-Allow-Headers': 'Content-Type',
+				}),
+			});
+		}
 		console.log(requestBody);
 		const res: any = await fetch(requestBody.url);
 		const blob = await res.arrayBuffer();
@@ -47,14 +61,14 @@ export default {
 		const resBody = JSON.stringify({ data });
 
 		return new Response(resBody, {
-			headers: {
+			headers: new Headers({
 				'Content-Type': 'application/json',
 				// Allow all origins
 				'Access-Control-Allow-Origin': '*',
 				// Optionally, you can also set other CORS headers
 				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 				'Access-Control-Allow-Headers': 'Content-Type',
-			},
+			}),
 		});
 	},
 };
