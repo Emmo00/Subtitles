@@ -100,10 +100,11 @@ async function submitForm() {
     const url = await uploadAudio(new Blob([outputAudio.buffer], { type: 'audio/mpeg' }))
     // send url to audio to text worker ai
     const audioTextResponse = await sendToAudioTextWorker(url);
+    console.log('ai transcript', audioTextResponse);
     // if target language not equal to source language, send to translation worker ai (coming soon)
 
     // prepare transcript file
-    transcriptBlob = createTranscriptFile(audioTextResponse);
+    transcriptBlob.value = createTranscriptFile(audioTextResponse);
     // prepare VTT file
     vttBlob.value = createVTTFile(audioTextResponse);
     // convert text to srt file

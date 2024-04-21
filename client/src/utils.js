@@ -40,11 +40,16 @@ export async function sendToAudioTextWorker(url) {
 function convertTimestamp(timestamp) {
   let [time, milliseconds] = timestamp.split('.');
   time = Number(time);
-  const seconds = 60 % time;
-  const minutes = 60 % Math.floor(time / 60);
-  const hours = Math.floor(Math.floor(time / 60) / 60);
+  let seconds = time % 60;
+  if (String(seconds).length < 2) seconds = '0' + seconds;
+  let minutes = Math.floor(time / 60) % 60 || '00';
+  if (String(minutes).length < 2) minutes = '0' + minutes;
+  let hours = Math.floor(Math.floor(time / 60) / 60) || '00';
+  if (String(hours).length < 2) hours = '0' + hours;
 
-  return `${hours}:${minutes}:${seconds},${milliseconds}`;
+  const stamp = `${hours}:${minutes}:${seconds},${milliseconds}`;
+  console.log(stamp);
+  return stamp;
 }
 
 function convertVTTToSRT(vttContent) {
