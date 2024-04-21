@@ -1,8 +1,8 @@
 <template>
     <div class="form-container">
         <form class="dropzone-box">
-            <h2>Upload and attach video files</h2>
-            <p>Click to upload or drag and drop</p>
+            <h2 class="hero">Generate Transcript and Subtitle Files for Videos</h2>
+            <p>Click to upload or drag and drop video files</p>
             <div class="dropzone-area" ref="dropzoneArea" @dragover.prevent="dragOver" @dragleave="dragLeave"
                 @dragend="dragLeave" @drop.prevent="drop">
                 <div class="file-upload-icon">
@@ -12,8 +12,8 @@
             </div>
             <div v-if="!filesReady" class="dropzone-actions">
                 <button type="reset">Cancel</button>
-                <button v-if="submitted" id="submit-button" type="submit" disabled>Loading...</button>
-                <button v-else id="submit-button" type="submit" @click.prevent="submitForm">Process</button>
+                <button v-if="submitted" id="submit-button" type="submit" disabled>{{ loading }}</button>
+                <button v-else id="submit-button" type="submit" @click.prevent="submitForm">Generate</button>
             </div>
             <div v-else style="display: flex; gap: 12px;" class="dropzone-actions">
                 <button class="submit-button" @click.prevent="downloadSRTFile">Download SRT</button>
@@ -41,6 +41,8 @@ const filesReady = ref(false);
 const transcriptBlob = ref(null)
 const vttBlob = ref(null)
 const srtBlob = ref(null)
+const loading = ref('Processing');
+
 
 
 function fileChanged(e) {
@@ -77,6 +79,13 @@ async function submitForm() {
         return;
     }
     submitted.value = true;
+    (function () {
+        setInterval(() => {
+            if (loading.value.length > 13) loading.value = 'Processing';
+            else
+                loading.value += '.'
+        }, 700);
+    })();
     console.log(selectedFile.value)
     console.log("Loading ffmpeg wasm...");
     ffmpeg.on('log', ({ message: msg }) => {
@@ -164,6 +173,11 @@ function downloadTranscriptFile() {
 *::selection {
     background: var(--primary);
     color: var(--btn-text);
+}
+
+.hero {
+    color: var(--primary-text);
+    text-align: center;
 }
 
 .dropzone-box {
