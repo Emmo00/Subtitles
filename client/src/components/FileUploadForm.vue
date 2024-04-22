@@ -42,6 +42,7 @@ const transcriptBlob = ref(null)
 const vttBlob = ref(null)
 const srtBlob = ref(null)
 const loading = ref('Processing');
+const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
 
 
 
@@ -88,12 +89,12 @@ async function submitForm() {
     console.log("Loading ffmpeg wasm...");
     ffmpeg.on('log', ({ message: msg }) => {
         console.log(msg);
-    })
+    });
     await ffmpeg.load({
-        coreURL: await toBlobURL(`/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`/ffmpeg-core.wasm`, 'application/wasm'),
-        workerURL: await toBlobURL(`/ffmpeg-core.worker.js`, 'text/javascript')
-    })
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
+    });
     console.log("Writing video file")
     const videoFileBlobURL = URL.createObjectURL(selectedFile.value)
     await ffmpeg.writeFile(selectedFile.value.name, await fetchFile(videoFileBlobURL));
