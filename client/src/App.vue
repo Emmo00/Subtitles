@@ -10,5 +10,3 @@ import Footer from './components/Footer.vue'
     <FileUploadForm />
     <Footer />
 </template>
-
-<style scoped></style>
