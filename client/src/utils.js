@@ -40,7 +40,6 @@ function convertTimestamp(timestamp) {
   if (String(hours).length < 2) hours = '0' + hours;
 
   const stamp = `${hours}:${minutes}:${seconds},${milliseconds}`;
-  console.log(stamp);
   return stamp;
 }
 

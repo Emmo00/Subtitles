@@ -48,7 +48,6 @@ export default {
 				}),
 			});
 		}
-		console.log(requestBody);
 		const res: any = await fetch(requestBody.url);
 		const blob = await res.arrayBuffer();
 

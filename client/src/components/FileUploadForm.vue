@@ -73,7 +73,6 @@ function drop(e) {
 }
 
 async function submitForm() {
-    // main shit
     if (!selectedFile.value) {
         fileRequired.value = true;
         return;
@@ -86,7 +85,6 @@ async function submitForm() {
                 loading.value += '.'
         }, 700);
     })();
-    console.log(selectedFile.value)
     console.log("Loading ffmpeg wasm...");
     ffmpeg.on('log', ({ message: msg }) => {
         console.log(msg);
