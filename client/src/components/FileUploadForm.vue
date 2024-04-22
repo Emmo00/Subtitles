@@ -11,7 +11,7 @@
                 <p class="file-info" :class="fileRequired ? 'error' : 'text-gray'">{{ fileInfo }}</p>
             </div>
             <div v-if="!filesReady" class="dropzone-actions">
-                <button type="reset">Cancel</button>
+                <button v-if="!submitted" type="reset">Cancel</button>
                 <button v-if="submitted" id="submit-button" type="submit" disabled>{{ loading }}</button>
                 <button v-else id="submit-button" type="submit" @click.prevent="submitForm">Generate</button>
             </div>
